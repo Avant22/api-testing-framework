@@ -1,0 +1,4 @@
+[
+  "tests/test_negative.py::test_user_not_found",
+  "tests/test_users.py::test_get_users"
+]

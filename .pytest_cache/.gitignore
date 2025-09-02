@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Reports & logs
+reports/
+allure-report/
+*.zip
+
+# Environment & secrets
+.env
+
+# IDE/editor
+.vscode/
+.idea/
