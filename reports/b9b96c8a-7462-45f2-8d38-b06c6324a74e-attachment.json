@@ -1,0 +1,11 @@
+Status: 200
+Headers: {'Content-Type': 'application/json'}
+Body:
+[
+  {
+    "id": 1,
+    "name": "Mock User",
+    "username": "mockuser",
+    "email": "mock@example.com"
+  }
+]

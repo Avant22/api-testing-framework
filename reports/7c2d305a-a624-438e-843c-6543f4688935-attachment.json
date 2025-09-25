@@ -1,0 +1,6 @@
+Status: 404
+Headers: {'Content-Type': 'application/json'}
+Body:
+{
+  "error": "User not found"
+}

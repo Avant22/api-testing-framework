@@ -1,0 +1,10 @@
+Status Code: 200
+
+[
+  {
+    "id": 1,
+    "name": "Mock User",
+    "username": "mockuser",
+    "email": "mock@example.com"
+  }
+]

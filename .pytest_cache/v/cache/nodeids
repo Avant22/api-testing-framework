@@ -1,4 +1,6 @@
 [
+  "tests/test_mocked_users.py::test_mocked_get_users",
+  "tests/test_mocked_users.py::test_mocked_user_not_found",
   "tests/test_negative.py::test_user_not_found",
   "tests/test_users.py::test_get_users"
 ]

@@ -1,0 +1,31 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 2 * * *"   # Run nightly at 2AM UTC
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install bandit pip-audit
+
+      - name: Run Bandit (Python Security Scan)
+        run: bandit -r .
+
+      - name: Run Pip Audit (Dependency Vulnerabilities)
+        run: pip-audit

@@ -2,29 +2,20 @@ import allure
 import json
 
 def log_request_response(name, response):
-    """
-    Attach request and response details to Allure report.
+    with allure.step(f"{name} - Request"):
+        allure.attach(
+            f"{response.request.method} {response.request.url}\nHeaders: {response.request.headers}\nBody: {response.request.body}",
+            name="Request",
+            attachment_type=allure.attachment_type.TEXT
+        )
 
-    :param name: Label for the request (e.g., 'Get Users')
-    :param response: requests.Response object
-    """
-    allure.attach(
-        f"{response.request.method} {response.request.url}\nHeaders: {response.request.headers}",
-        name=f"{name} - Request",
-        attachment_type=allure.attachment_type.TEXT
-    )
-
-    try:
-        # Pretty-print JSON if possible
-        body = json.dumps(response.json(), indent=2)
-        attachment_type = allure.attachment_type.JSON
-    except Exception:
-        # Fallback to raw text
-        body = response.text
-        attachment_type = allure.attachment_type.TEXT
-
-    allure.attach(
-        f"Status Code: {response.status_code}\n\n{body}",
-        name=f"{name} - Response",
-        attachment_type=attachment_type
-    )
+    with allure.step(f"{name} - Response"):
+        try:
+            body = json.dumps(response.json(), indent=2)
+        except Exception:
+            body = response.text
+        allure.attach(
+            f"Status: {response.status_code}\nHeaders: {response.headers}\nBody:\n{body}",
+            name="Response",
+            attachment_type=allure.attachment_type.JSON
+        )

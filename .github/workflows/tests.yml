@@ -24,9 +24,35 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Generate AI-Driven Tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python utils/ai_test_generator.py
+
+      - name: Upload AI-Generated Tests
+        uses: actions/upload-artifact@v3
+        with:
+          name: ai-generated-tests
+          path: tests/generated/test_ai_generated.py
+
       - name: Run pytest with Allure
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
         run: |
           pytest --alluredir=reports
+
+      - name: Run Locust Load Test (headless)
+        run: |
+          mkdir -p reports
+          locust -f locust/locustfile.py --headless -u 10 -r 2 -t 30s --host=https://jsonplaceholder.typicode.com --csv=reports/locust
+
+      - name: Upload Locust CSV Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: locust-results
+          path: reports/locust_stats.csv
 
       - name: Upload Allure results (raw JSON)
         uses: actions/upload-artifact@v3
@@ -41,8 +67,47 @@ jobs:
           allure_report: allure-report
           keep_reports: 5
 
-      - name: Upload Allure report to GitHub Pages
+      - name: Deploy Allure report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: allure-report
+
+      - name: Slack Notification
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "text": "✅ API Test Framework CI run completed. See [Allure Report](https://avant22.github.io/api-testing-framework/)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "API Test Framework CI Results"
+          body: "Tests finished. See Allure report at https://avant22.github.io/api-testing-framework/"
+          to: your-email@example.com
+          from: GitHub Actions
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 3 * * *"   # Full regression nightly at 3AM UTC
+services:
+  wiremock:
+    image: wiremock/wiremock:2.35.0
+    ports:
+      - 8080:8080
+      - name: Push Metrics to Monitoring
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{"tests_passed": 42, "tests_failed": 1}' \
+          https://monitoring.example.com/qa-metrics
